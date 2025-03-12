@@ -37,5 +37,5 @@ export class CreateProductDto {
   sizes: string[];
 
   @IsIn(['men', 'women', 'kid', 'unisex'])
-  gender: string;
+  gender: 'men' | 'women' | 'kid' | 'unisex';
 }
