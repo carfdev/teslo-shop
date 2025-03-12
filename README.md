@@ -10,12 +10,12 @@ NestJS-powered REST API for product management. Features CRUD operations, pagina
 ## Installation
 
 1. Clone the project
-```
+```bash
 git clone https://github.com/carfdev/teslo-shop.git
 ```
 
 2. Install the dependencies 
-```
+```bash
 yarn install
 ```
 
@@ -24,12 +24,12 @@ yarn install
 4. Change the environment variables in the ```.env```
 
 5. Start the database
-```
+```bash
 docker compose up -d
 ```
 
 6. Run the project in development mode
-```
+```bash
 yarn start:dev
 ```
 
