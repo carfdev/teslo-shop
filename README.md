@@ -33,6 +33,11 @@ docker compose up -d
 yarn start:dev
 ```
 
+7. Make a GET request to the `SEED` endpoint to populate the database with test data
+```bash
+curl -X GET http://localhost:3000/api/seed
+```
+
 ## Environment Variables
 
 * `DB_HOST`: PostgreSQL host
@@ -45,16 +50,31 @@ yarn start:dev
 
 ```text
 src/
-├── app.module.ts        # Root module
-├── main.ts              # Entry point
-├── common/              # Shared utilities
-│   ├── dto/             # Data transfer objects
-│   └── interfaces/      # Type definitions
-└── products/            # Product domain
-    ├── entities/        # TypeORM entities
-    ├── dto/             # Validation schemas
-    ├── controllers/     # REST endpoints
-    └── services/        # Business logic
+  ├── app.module.ts
+  ├── main.ts
+  ├── common/
+  │   ├── common.module.ts
+  │   ├── dto/
+  │   │   └── pagination.dto.ts
+  │   └── interfaces/
+  │       └── typeORM-error.interface.ts
+  ├── products/
+  │   ├── products.controller.ts
+  │   ├── products.module.ts
+  │   ├── products.service.ts
+  │   ├── dto/
+  │   │   ├── create-product.dto.ts
+  │   │   └── update-product.dto.ts
+  │   └── entities/
+  │       ├── index.ts
+  │       ├── product-image.entity.ts
+  │       └── product.entity.ts
+  └── seed/
+      ├── seed.controller.ts
+      ├── seed.module.ts
+      ├── seed.service.ts
+      └── data/
+          └── seed-data.ts
 ```
 
 ## API Endpoints
@@ -66,6 +86,7 @@ src/
 | GET    | `/api/products/:term` | Get product by UUID or slug       |
 | PATCH  | `/api/products/:id`   | Update product                    |
 | DELETE | `/api/products/:id`   | Delete product                    |
+| GET    | `/api/seed`           | Populate the database             |
 
 
 ## Key Features
@@ -83,6 +104,7 @@ src/
 | `yarn build`      | Compile TypeScript to JS      |
 | `yarn format`     | Format code with Prettier     |
 | `yarn lint`       | Lint code with ESLint         |
+| `yarn start:dev`  | Run in dev mode               |
 | `yarn start:prod` | Run compiled production build |
 
 
