@@ -6,6 +6,8 @@ import { Repository } from 'typeorm';
 import { TypeORMError } from 'src/common/interfaces/typeORM-error.interface';
 import { CommonService } from 'src/common/common.service';
 
+import * as bcrypt from 'bcrypt';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -15,8 +17,15 @@ export class AuthService {
   ) {}
   async create(createUserDto: CreateUserDto) {
     try {
-      const user = this.userRepository.create(createUserDto);
-      return await this.userRepository.save(user);
+      const { password, ...userData } = createUserDto;
+      const user = this.userRepository.create({
+        ...userData,
+        password: bcrypt.hashSync(password, 10),
+      });
+      await this.userRepository.save(user);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password: _, ...userWithoutPassword } = user;
+      return userWithoutPassword;
     } catch (e) {
       const error = e as TypeORMError;
       this.commonService.handleExeptions(error);
