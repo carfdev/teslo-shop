@@ -27,11 +27,11 @@ export class AuthService {
       });
       await this.userRepository.save(user);
 
-      const { email, fullName } = user;
+      const { email, fullName, id } = user;
       return {
         email,
         fullName,
-        token: this.getJwtToken({ email }),
+        token: this.getJwtToken({ id }),
       };
     } catch (e) {
       const error = e as TypeORMError;
@@ -44,7 +44,7 @@ export class AuthService {
     const { password, email } = loginUserDto;
     const user = await this.userRepository.findOne({
       where: { email },
-      select: { email: true, password: true, fullName: true },
+      select: { email: true, password: true, fullName: true, id: true },
     });
     if (!user) {
       throw new BadRequestException('Check credentials');
@@ -53,11 +53,11 @@ export class AuthService {
       throw new BadRequestException('Check credentials');
     }
 
-    const { fullName } = user;
+    const { fullName, id } = user;
     return {
       email,
       fullName,
-      token: this.getJwtToken({ email }),
+      token: this.getJwtToken({ id }),
     };
   }
 
