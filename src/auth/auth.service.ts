@@ -7,6 +7,8 @@ import { TypeORMError } from 'src/common/interfaces/typeORM-error.interface';
 import { CommonService } from 'src/common/common.service';
 
 import * as bcrypt from 'bcrypt';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +16,7 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly commonService: CommonService,
+    private readonly jwtService: JwtService,
   ) {}
   async create(createUserDto: CreateUserDto) {
     try {
@@ -28,6 +31,7 @@ export class AuthService {
       return {
         email,
         fullName,
+        token: this.getJwtToken({ email }),
       };
     } catch (e) {
       const error = e as TypeORMError;
@@ -36,6 +40,7 @@ export class AuthService {
   }
 
   async login(loginUserDto: LoginUserDto) {
+    loginUserDto.email = loginUserDto.email.toLowerCase().trim();
     const { password, email } = loginUserDto;
     const user = await this.userRepository.findOne({
       where: { email },
@@ -52,6 +57,12 @@ export class AuthService {
     return {
       email,
       fullName,
+      token: this.getJwtToken({ email }),
     };
+  }
+
+  private getJwtToken(payload: JwtPayload) {
+    const token = this.jwtService.sign(payload);
+    return token;
   }
 }
