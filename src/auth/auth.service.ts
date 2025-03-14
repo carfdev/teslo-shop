@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { CreateUserDto, LoginUserDto } from './dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
@@ -23,12 +23,37 @@ export class AuthService {
         password: bcrypt.hashSync(password, 10),
       });
       await this.userRepository.save(user);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password: _, ...userWithoutPassword } = user;
-      return userWithoutPassword;
+
+      const { id, email, fullName } = user;
+      return {
+        id,
+        email,
+        fullName,
+      };
     } catch (e) {
       const error = e as TypeORMError;
       this.commonService.handleExeptions(error);
     }
+  }
+
+  async login(loginUserDto: LoginUserDto) {
+    const { password, email } = loginUserDto;
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: { email: true, password: true, id: true, fullName: true },
+    });
+    if (!user) {
+      throw new BadRequestException('Check credentials');
+    }
+    if (!bcrypt.compareSync(password, user.password)) {
+      throw new BadRequestException('Check credentials');
+    }
+
+    const { id, fullName } = user;
+    return {
+      id,
+      email,
+      fullName,
+    };
   }
 }
