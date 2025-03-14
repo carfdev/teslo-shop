@@ -24,9 +24,8 @@ export class AuthService {
       });
       await this.userRepository.save(user);
 
-      const { id, email, fullName } = user;
+      const { email, fullName } = user;
       return {
-        id,
         email,
         fullName,
       };
@@ -40,7 +39,7 @@ export class AuthService {
     const { password, email } = loginUserDto;
     const user = await this.userRepository.findOne({
       where: { email },
-      select: { email: true, password: true, id: true, fullName: true },
+      select: { email: true, password: true, fullName: true },
     });
     if (!user) {
       throw new BadRequestException('Check credentials');
@@ -49,9 +48,8 @@ export class AuthService {
       throw new BadRequestException('Check credentials');
     }
 
-    const { id, fullName } = user;
+    const { fullName } = user;
     return {
-      id,
       email,
       fullName,
     };
