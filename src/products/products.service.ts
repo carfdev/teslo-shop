@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,10 +7,10 @@ import { TypeORMError } from 'src/common/interfaces/typeORM-error.interface';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { validate as isUUID } from 'uuid';
 import { ProductImage, Product } from './entities';
+import { CommonService } from 'src/common/common.service';
 
 @Injectable()
 export class ProductsService {
-  private readonly logger = new Logger('ProductsService');
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
@@ -25,6 +19,8 @@ export class ProductsService {
     private readonly productImageRepository: Repository<ProductImage>,
 
     private readonly dataSource: DataSource,
+
+    private readonly commonService: CommonService,
   ) {}
 
   async create(createProductDto: CreateProductDto) {
@@ -40,7 +36,7 @@ export class ProductsService {
       return { ...product, images };
     } catch (e) {
       const error = e as TypeORMError;
-      this.handleExeptions(error);
+      this.commonService.handleExeptions(error);
     }
   }
 
@@ -108,7 +104,7 @@ export class ProductsService {
     } catch (e) {
       await queryRunner.rollbackTransaction();
       await queryRunner.release();
-      this.handleExeptions(e as TypeORMError);
+      this.commonService.handleExeptions(e as TypeORMError);
     }
   }
 
@@ -120,20 +116,12 @@ export class ProductsService {
     }
   }
 
-  private handleExeptions(error: TypeORMError) {
-    if (error.code === '23505') {
-      throw new BadRequestException(error.detail);
-    }
-    this.logger.error(error);
-    throw new InternalServerErrorException('Check server logs');
-  }
-
   async deleteAllProducts() {
     const query = this.productRepository.createQueryBuilder('product');
     try {
       return await query.delete().where({}).execute();
     } catch (e) {
-      this.handleExeptions(e as TypeORMError);
+      this.commonService.handleExeptions(e as TypeORMError);
     }
   }
 }
