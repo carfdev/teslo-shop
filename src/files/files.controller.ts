@@ -15,6 +15,8 @@ import { diskStorage } from 'multer';
 import { type Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { ApiBody, ApiConsumes, ApiResponse } from '@nestjs/swagger';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @Controller('files')
 export class FilesController {
@@ -24,6 +26,7 @@ export class FilesController {
   ) {}
 
   @Get('product/:imageName')
+  @Auth()
   @ApiResponse({ status: 200, description: 'Image found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findProductImage(
@@ -36,6 +39,7 @@ export class FilesController {
   }
 
   @Post('product')
+  @Auth(ValidRoles.admin)
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: 'Imagen en formato JPG, JPEG, PNG o WEBP, máximo 4 MB',
