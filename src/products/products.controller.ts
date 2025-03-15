@@ -16,7 +16,7 @@ import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { Auth, GetUser } from '../auth/decorators';
 import { ValidRoles } from '../auth/interfaces';
 import { User } from 'src/auth/entities/user.entity';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiHeader, ApiResponse } from '@nestjs/swagger';
 import { Product } from './entities';
 
 @Controller('products')
@@ -38,24 +38,83 @@ export class ProductsController {
     status: 403,
     description: 'Forbidden',
   })
+  @ApiHeader({
+    name: 'Admin authorization',
+    description: 'Bearer token',
+    required: true,
+  })
   create(@Body() createProductDto: CreateProductDto, @GetUser() user: User) {
     return this.productsService.create(createProductDto, user);
   }
 
-  @Auth()
   @Get()
+  @Auth()
+  @ApiResponse({
+    status: 200,
+    description: 'List of products',
+    type: [Product],
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden',
+  })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Bearer token',
+    required: true,
+  })
   findAll(@Query() paginationDto: PaginationDto) {
     return this.productsService.findAll(paginationDto);
   }
 
-  @Auth()
   @Get(':term')
+  @Auth()
+  @ApiResponse({
+    status: 200,
+    description: 'Product was found',
+    type: Product,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden',
+  })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Bearer token',
+    required: true,
+  })
   findOne(@Param('term') term: string) {
     return this.productsService.findOne(term);
   }
 
-  @Auth(ValidRoles.admin)
   @Patch(':id')
+  @Auth(ValidRoles.admin)
+  @ApiResponse({
+    status: 200,
+    description: 'Product was updated',
+    type: Product,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden',
+  })
+  @ApiHeader({
+    name: 'Admin authorization',
+    description: 'Bearer token',
+    required: true,
+  })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateProductDto: UpdateProductDto,
@@ -64,8 +123,25 @@ export class ProductsController {
     return this.productsService.update(id, updateProductDto, user);
   }
 
-  @Auth(ValidRoles.admin)
   @Delete(':id')
+  @Auth(ValidRoles.admin)
+  @ApiResponse({
+    status: 200,
+    description: 'Product was deleted',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden',
+  })
+  @ApiHeader({
+    name: 'Admin authorization',
+    description: 'Bearer token',
+    required: true,
+  })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.productsService.remove(id);
   }

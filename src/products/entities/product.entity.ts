@@ -104,6 +104,10 @@ export class Product {
   })
   images: ProductImage[];
 
+  @ApiProperty({
+    description: 'User ID',
+    type: User,
+  })
   @ManyToOne(() => User, (user) => user.product, { eager: true })
   user: User;
 
