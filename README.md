@@ -45,6 +45,9 @@ curl -X GET http://localhost:3000/api/seed
 * `DB_USER`: Database user
 * `DB_PASSWORD`: Database password
 * `DB_NAME`: Database name
+* `PORT`: Server port
+* `HOST_API`: Server host URL
+* `JWT_SECRET`: Secret key for JWT authentication
 
 ## Project Structure
 
@@ -52,13 +55,33 @@ curl -X GET http://localhost:3000/api/seed
 src/
   ├── app.module.ts
   ├── main.ts
-  ├── common/
+  ├── auth/                  # Authentication module
+  │   ├── auth.controller.ts
+  │   ├── auth.module.ts
+  │   ├── auth.service.ts
+  │   ├── decorators/
+  │   ├── dto/
+  │   ├── entities/
+  │   ├── guards/
+  │   ├── interfaces/
+  │   └── strategies/
+  ├── common/                # Shared utilities
   │   ├── common.module.ts
+  │   ├── common.service.ts
   │   ├── dto/
   │   │   └── pagination.dto.ts
   │   └── interfaces/
   │       └── typeORM-error.interface.ts
-  ├── products/
+  ├── files/                 # File upload module
+  │   ├── files.controller.ts
+  │   ├── files.module.ts
+  │   ├── files.service.ts
+  │   └── helpers/
+  ├── message-ws/            # WebSockets module
+  │   ├── message-ws.gateway.ts
+  │   ├── message-ws.module.ts
+  │   └── message-ws.service.ts
+  ├── products/              # Products module
   │   ├── products.controller.ts
   │   ├── products.module.ts
   │   ├── products.service.ts
@@ -69,7 +92,7 @@ src/
   │       ├── index.ts
   │       ├── product-image.entity.ts
   │       └── product.entity.ts
-  └── seed/
+  └── seed/                  # Database seeding
       ├── seed.controller.ts
       ├── seed.module.ts
       ├── seed.service.ts
@@ -79,33 +102,68 @@ src/
 
 ## API Endpoints
 
-| Method | Endpoint              | Description                       |
-|--------|-----------------------|-----------------------------------|
-| POST   | `/api/products`       | Create new product                |
-| GET    | `/api/products`       | Get paginated products            |
-| GET    | `/api/products/:term` | Get product by UUID or slug       |
-| PATCH  | `/api/products/:id`   | Update product                    |
-| DELETE | `/api/products/:id`   | Delete product                    |
-| GET    | `/api/seed`           | Populate the database             |
+### Products
+| Method | Endpoint                        | Description                       | Auth Required |
+|--------|---------------------------------|-----------------------------------|---------------|
+| POST   | `/api/products`                 | Create new product                | Admin         |
+| GET    | `/api/products`                 | Get paginated products            | User          |
+| GET    | `/api/products/:term`           | Get product by UUID or slug       | User          |
+| PATCH  | `/api/products/:id`             | Update product                    | Admin         |
+| DELETE | `/api/products/:id`             | Delete product                    | Admin         |
 
+### Authentication
+| Method | Endpoint                        | Description                       | Auth Required |
+|--------|---------------------------------|-----------------------------------|---------------|
+| POST   | `/api/auth/register`            | Register new user                 | No            |
+| POST   | `/api/auth/login`               | Login user                        | No            |
+| GET    | `/api/auth/check-status`        | Get paginated products            | User          |
+
+### Files
+| Method | Endpoint                        | Description                       | Auth Required |
+|--------|---------------------------------|-----------------------------------|---------------|
+| POST   | `/api/files/product`            | Upload product image              | Admin         |
+| GET    | `/api/files/product/:imageName` | Get product image                 | User          |
+
+### Seed
+| Method | Endpoint                        | Description                       | Auth Required |
+|--------|---------------------------------|-----------------------------------|---------------|
+| GET    | `/api/seed`                     | Populate the database             | Admin         |
+
+
+## Authentication
+
+The API uses JWT (JSON Web Token) for authentication. There are three user roles:
+- `user`: Regular user with read access
+- `admin`: Administrator with full access
+- `super-user`: Special role with extended privileges
+
+To authenticate, include the JWT token in the Authorization header:
+```bash
+Authorization: Bearer <token>
+```
 
 ## Key Features
 
+- **Authentication:** JWT-based authentication with role-based access control 
 - **Validation:** `class-validator` DTOs for request payloads  
 - **Error Handling:** Custom TypeORM error interception  
 - **Pagination:** `?limit=` and `?offset=` query parameters  
 - **Slug Generation:** Auto-generate SEO-friendly slugs  
+- **File Uploads:** Support for image uploads with validation
+- **WebSockets:** Real-time communication support
+- **API Documentation:** Swagger UI available at `/doc` endpoint
 - **Database:** PostgreSQL with Dockerized setup
 
 ## Development Commands
 
-| Command           | Description                   |
-|-------------------|-------------------------------|
-| `yarn build`      | Compile TypeScript to JS      |
-| `yarn format`     | Format code with Prettier     |
-| `yarn lint`       | Lint code with ESLint         |
-| `yarn start:dev`  | Run in dev mode               |
-| `yarn start:prod` | Run compiled production build |
+| Command             | Description                   |
+|---------------------|-------------------------------|
+| `yarn build`        | Compile TypeScript to JS      |
+| `yarn format`       | Format code with Prettier     |
+| `yarn lint`         | Lint code with ESLint         |
+| `yarn start:dev`    | Run in dev mode               |
+| `yarn start:debug`  | Run in debug mode             |
+| `yarn start:prod`   | Run compiled production build |
 
 
 ## Error Responses
@@ -113,6 +171,8 @@ src/
 ### Common error codes:
 
 - `400 Bad Request`: Invalid request body/parameters
+- `401 Unauthorized`: Missing or invalid authentication
+- `403 Forbidden`: Insufficient permissions
 - `404 Not Found`: Resource not found
 - `500 Internal Error`: Server-side exception (check logs)
 
