@@ -23,6 +23,8 @@ export class CreateProductDto {
   @ApiProperty({
     example: 0,
     description: 'Product price',
+    required: false,
+    default: 0,
   })
   @IsNumber()
   @IsPositive()
@@ -32,13 +34,15 @@ export class CreateProductDto {
   @ApiProperty({
     example: 'Product description',
     description: 'Product description',
+    required: false,
+    default: '',
   })
   @IsString()
   @IsOptional()
   description?: string;
 
   @ApiProperty({
-    example: 'product-slug',
+    example: 't-shirt-teslo',
     description: 'Product slug',
     uniqueItems: true,
     required: false,
@@ -50,6 +54,8 @@ export class CreateProductDto {
   @ApiProperty({
     example: 10,
     description: 'Product stock',
+    required: false,
+    default: 0,
   })
   @IsInt()
   @IsPositive()
@@ -74,15 +80,19 @@ export class CreateProductDto {
   @ApiProperty({
     example: ['Shoes', 'Clothing'],
     description: 'Product tags',
+    required: false,
+    default: [],
   })
   @IsString({ each: true })
   @IsArray()
   @IsOptional()
-  tags: string[];
+  tags?: string[];
 
   @ApiProperty({
     example: ['https://teslo.com/image1.jpg', 'https://teslo.com/image2.jpg'],
     description: 'Product images',
+    required: false,
+    default: [],
   })
   @IsString({ each: true })
   @IsArray()
