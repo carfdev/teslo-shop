@@ -1,37 +1,35 @@
-# Install dependencies only when needed
-FROM node:22.14-alpine3.21 AS deps
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-RUN apk add --no-cache libc6-compat
+# Etapa de dependencias
+FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
 
-# Build the app with cache dependencies
-FROM node:22.14-alpine3.21 AS builder
+# Etapa de construcción
+FROM node:22-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN yarn build
 
+# Etapa de obtener el node_modules de prod
+FROM node:22-alpine AS prod-deps
+WORKDIR /app
+COPY package.json yarn.lock ./
+RUN yarn install --prod && yarn cache clean
 
-# Production image, copy all the files and run next
-FROM node:22.14-alpine3.21 AS runner
-
-# Set working directory
+# Etapa de producción (usando distroless)
+FROM node:22-alpine AS runner
 WORKDIR /usr/src/app
 
+# Copiar solo los archivos necesarios
 COPY package.json yarn.lock ./
-
-RUN yarn install --prod
-
 COPY --from=builder /app/dist ./dist
+COPY --from=prod-deps /app/node_modules ./node_modules
 
-
-# # Dar permiso para ejecutar la applicación
+# Cambiar permisos para ejecutar la app
 RUN adduser --disabled-password teslouser
 RUN chown -R teslouser:teslouser /usr/src/app
 USER teslouser
 
 EXPOSE 3000
-
-CMD [ "node","dist/main" ]
+CMD ["node", "dist/main"]

@@ -61,3 +61,11 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 postgres
 
 static/products/*
+
+
+# Ignorar todos los archivos que no son necesarios
+static/products/*
+/dist
+/node_modules
+/build
+.vscode
