@@ -1,10 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ProductsService } from 'src/products/products.service';
 import { initialData } from './data/seed-data';
 import { User } from 'src/auth/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class SeedService {
@@ -14,28 +13,19 @@ export class SeedService {
     private readonly userRepository: Repository<User>,
   ) {}
   async execute() {
-    await this.deleteTables();
-    const adminUser = await this.insertUsers();
+    await this.productsService.deleteAllProducts();
+    const adminUser = await this.getAdminUser();
     await this.insertNewProducts(adminUser);
     return `SEED EXECUTED`;
   }
 
-  private async deleteTables() {
-    await this.productsService.deleteAllProducts();
-    const query = this.userRepository.createQueryBuilder();
-    await query.delete().where({}).execute();
-  }
-
-  private async insertUsers() {
-    const seedUsers = initialData.users;
-    const users: User[] = [];
-
-    seedUsers.forEach((user) => {
-      user.password = bcrypt.hashSync(user.password, 10);
-      users.push(this.userRepository.create(user));
-    });
-    await this.userRepository.save(users);
-    return users[0];
+  private async getAdminUser() {
+    const users = await this.userRepository.find({});
+    const adminUser = users.find((user) => user.roles.includes('admin'));
+    if (adminUser) {
+      return adminUser;
+    }
+    throw new InternalServerErrorException('Admin user not found');
   }
 
   private async insertNewProducts(user: User) {
