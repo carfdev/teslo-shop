@@ -33,9 +33,21 @@ docker compose up -d
 yarn start:dev
 ```
 
-7. Make a GET request to the `SEED` endpoint to populate the database with test data
+7. Create first user admin and get a jwt
 ```bash
-curl -X GET http://localhost:3000/api/seed
+curl -X POST http://localhost:3000/api/auth/register \
+     -H "Content-Type: application/json" \
+     -d '{
+           "email": "admin@google.com",
+           "password": "Abc123",
+           "fullName": "Admin"
+         }'
+```
+
+8. Make a GET request to the `SEED` endpoint with jwt to populate the database with test data
+```bash
+curl -X GET http://localhost:3000/api/seed \
+     -H "Authorization: Bearer your_admin_token"
 ```
 
 ## Environment Variables
