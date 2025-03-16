@@ -31,5 +31,5 @@ RUN adduser --disabled-password teslouser
 RUN chown -R teslouser:teslouser /usr/src/app
 USER teslouser
 
-EXPOSE 3000
+# EXPOSE 3000
 CMD ["node", "dist/main"]
