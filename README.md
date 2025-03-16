@@ -57,6 +57,7 @@ curl -X GET http://localhost:3000/api/seed \
 * `DB_USER`: Database user
 * `DB_PASSWORD`: Database password
 * `DB_NAME`: Database name
+* `DB_SSL`: Database secure_ssl (default: false)
 * `PORT`: Server port
 * `HOST_API`: Server host URL
 * `JWT_SECRET`: Secret key for JWT authentication
