@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, OnModuleInit } from '@nestjs/common';
 import { CreateUserDto, LoginUserDto } from './dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
@@ -11,21 +11,35 @@ import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit {
+  private isFirstUser = false;
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly commonService: CommonService,
     private readonly jwtService: JwtService,
   ) {}
+
+  async onModuleInit() {
+    const count = await this.userRepository.count();
+    this.isFirstUser = count === 0;
+  }
+
   async create(createUserDto: CreateUserDto) {
     try {
       const { password, ...userData } = createUserDto;
+      const role = this.isFirstUser ? 'admin' : 'user';
+
       const user = this.userRepository.create({
         ...userData,
         password: bcrypt.hashSync(password, 10),
+        roles: [role],
       });
       await this.userRepository.save(user);
+
+      if (this.isFirstUser) {
+        this.isFirstUser = false;
+      }
 
       const { email, fullName, id } = user;
       return {
